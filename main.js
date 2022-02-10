@@ -1,19 +1,26 @@
 const roads = [
-    "Alice's House-Bob's House", 
+    "Alice's House-Bob's House",
     "Alice's House-Cabin",
     "Alice's House-Post Office",
     "Bob's House-Town Hall",
     "Daria's House-Ernie's House",
     "Daria's House-Town Hall",
-    "Ernie's House-Grete's House", 
+    "Ernie's House-Grete's House",
     "Grete's House-Farm",
-    "Grete's House-Shop", 
+    "Grete's House-Shop",
     "Marketplace-Farm",
-    "Marketplace-Post Office", 
+    "Marketplace-Post Office",
     "Marketplace-Shop",
-    "Marketplace-Town Hall", 
+    "Marketplace-Town Hall",
     "Shop-Town Hall"
-    ];
+];
+
+const mailRoute = [
+    "Alice's House", "Cabin", "Alice's House", "Bob's House",
+    "Town Hall", "Daria's House", "Ernie's House",
+    "Grete's House", "Shop", "Grete's House", "Farm",
+    "Marketplace", "Post Office"
+];
 
 
 /**
@@ -22,6 +29,7 @@ const roads = [
  * @returns The graph is being returned as an object with the key being the city and the value being an
  * array of the cities that are connected to it.
  */
+
 function buildGraph(edges) {
     let graph = Object.create(null);
     function addEdge(from, to) {
@@ -81,3 +89,54 @@ function randomRobot(state) {
     return {direction: randomPick(roadGraph[state.place])};
 }
 
+
+/* This is a function that creates a new VillageState object with random parcels. */
+VillageState.random = function(parcelCount = 5) {
+    let parcels = [];
+    for(let i = 0; i < parcelCount; i++){
+        let address = randomPick(Object.keys(roadGraph));
+        let place;
+        do { //do-while keeps picking new addresses until place != address as we dont want the any parcel sent from the address it's destinated to.
+            place = randomPick(Object.keys(roadGraph));
+        } while(place == address);
+    } parcels.push({place, address});
+}
+return new VillageState("Post Office", parcels);
+
+
+/**
+ * Given a state and a memory, return a new state with the robot's direction and memory
+ * @param state - The current state of the robot.
+ * @param memory - the route that the robot is currently following.
+ * @returns The direction and memory.
+ */
+function routeRobot(state, memory) {
+    if (memory.length === 0) {
+        memory = mailRoute;
+    }
+    return {direction: memory[0], memory: memory.slice(1)}
+}
+
+
+/**
+ * FindRoute(graph, from, to)
+ * 
+ * The function takes a graph and two nodes, and returns a list of nodes that represents the shortest
+ * path between the two nodes
+ * @param graph - A graph of places.
+ * @param from - The starting point of the route.
+ * @param to - The place you want to get to.
+ * @returns An array of strings.
+ */
+function findRoute(graph, from, to) {
+    let work = [{at: from, route: []}];  //-->from: actual position, + empty route
+    for (let i = 0; i < work.length; i++) {
+        let {at, route} = work[i];
+        for (const place of graph[at]) {
+            if (place === to) return route.concat(place);
+            if (!work.some(w => w.at === place)) {
+                work.push({at: place, route: route.concat(place)});
+            }
+        }
+    }
+}
