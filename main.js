@@ -109,7 +109,7 @@ return new VillageState("Post Office", parcels);
  * @param state - The current state of the robot.
  * @param memory - the route that the robot is currently following.
  * @returns The direction and memory.
- */
+*/
 function routeRobot(state, memory) {
     if (memory.length === 0) {
         memory = mailRoute;
@@ -120,16 +120,20 @@ function routeRobot(state, memory) {
 
 /**
  * FindRoute(graph, from, to)
- * 
+ * 1 - WORK: --> from: actual position, + route: empty route ---> work list --> array of places that should be explored next.
+ * 2 - FIND ROUTE --> look for the next element on the list and explore all route going from there
+ * 3 - If 2- find  a route that matches the goal, than that route is returned.
+ * 4 - If 3- it's not the goal but we haven't looked at it before, gets added to the list of new items.
+ * 5 - If 3- it's not the goal AND we have already looked at it before, it means it's a longer route (discard)
  * The function takes a graph and two nodes, and returns a list of nodes that represents the shortest
  * path between the two nodes
  * @param graph - A graph of places.
  * @param from - The starting point of the route.
  * @param to - The place you want to get to.
  * @returns An array of strings.
- */
+*/
 function findRoute(graph, from, to) {
-    let work = [{at: from, route: []}];  //-->from: actual position, + empty route
+    let work = [{at: from, route: []}];  
     for (let i = 0; i < work.length; i++) {
         let {at, route} = work[i];
         for (const place of graph[at]) {
@@ -139,4 +143,17 @@ function findRoute(graph, from, to) {
             }
         }
     }
+}
+
+
+function goalOrientedRobot({place, parcels}, route) {
+    if (route.length === 0) {
+        let parcel = parcels[0];
+        if (parcel.place !== place) {
+            route = findRoute(roadGraph, place, parcel.place);
+        } else {
+            route = findRoute(roadGraph, place, parcel.address);
+        }
+    }
+    return {direction: route[0], memory: route.slice(1)};
 }
